@@ -1,10 +1,12 @@
 <?php
 	class Account {
 
+		private $connection;
 		private $errorArray;
 
 		public function __construct() {
-			$this->errorArray = array();
+			$this->errorArray = array($connection);
+			$this->$connection = $connection;
 		}
 
 		public function register($un, $fn, $ln, $em, $em2, $pw, $pw2) {
@@ -16,7 +18,7 @@
 
 			if(empty($this->errorArray) == true) {
 				//Insert into db
-				return true;
+				return insertUserDetails($un, $fn, $ln, $em,$pw);
 			}
 			else {
 				return false;
@@ -29,6 +31,10 @@
 				$error = "";
 			}
 			return "<span class='errorMessage'>$error</span>";
+		}
+
+		public function insertUserDetails($un, $fn, $ln, $em,$pw){
+
 		}
 
 		private function validateUsername($un) {
