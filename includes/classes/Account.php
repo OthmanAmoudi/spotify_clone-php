@@ -34,7 +34,8 @@
 		}
 
 		public function insertUserDetails($un, $fn, $ln, $em,$pw){
-
+			$encryptedPw = md5($pw);
+			$profilePic = "/includes/assets/images/profile-pics/head_emerald.png";
 		}
 
 		private function validateUsername($un) {
