@@ -4,9 +4,20 @@
 		private $connection;
 		private $errorArray;
 
-		public function __construct() {
-			$this->errorArray = array($connection);
-			$this->$connection = $connection;
+		public function __construct($connection) {
+			$this->connection = $connection;
+			$this->errorArray = array();
+		}
+
+		public function login($un,$pw){
+			$pw = md5($pw);
+			$checkUsernameInDB = mysqli_query($this->connection,"SELECT * FROM users WHERE username='$un' AND password='$pw'");
+			if(mysqli_num_rows($checkUsernameInDB) == 1){
+				return true;
+			}else{
+				array_push($this->errorArray,Constants::$loginFailed);
+				return false;
+			}
 		}
 
 		public function register($un, $fn, $ln, $em, $em2, $pw, $pw2) {
@@ -17,8 +28,7 @@
 			$this->validatePasswords($pw, $pw2);
 
 			if(empty($this->errorArray) == true) {
-				//Insert into db
-				return insertUserDetails($un, $fn, $ln, $em,$pw);
+				return $this->insertUserDetails($un, $fn, $ln, $em,$pw);
 			}
 			else {
 				return false;
@@ -33,20 +43,24 @@
 			return "<span class='errorMessage'>$error</span>";
 		}
 
-		public function insertUserDetails($un, $fn, $ln, $em,$pw){
+		private function insertUserDetails($un, $fn, $ln, $em,$pw){
 			$encryptedPw = md5($pw);
 			$profilePic = "/includes/assets/images/profile-pics/head_emerald.png";
+			$date = date('Y-m-d');
+			$result = mysqli_query($this->connection,"INSERT INTO users VALUES ('','$un','$fn','$ln','$em','$encryptedPw','$date','$profilePic')");
+			return $result;
 		}
 
 		private function validateUsername($un) {
-
 			if(strlen($un) > 25 || strlen($un) < 5) {
 				array_push($this->errorArray, Constants::$userNameCharacters);
 				return;
 			}
-
-			//TODO: check if username exists
-
+			$checkUsername = mysqli_query($this->connection,"SELECT username from users WHERE username='$un'");
+			if(mysqli_num_rows($checkUsername) != 0){
+				array_push($this->errorArray,Constants::$usernameAlreadyExist);
+				return;
+			}
 		}
 
 		private function validateFirstName($fn) {
@@ -68,13 +82,15 @@
 				array_push($this->errorArray, Constants::$emailsDoNotMatch );
 				return;
 			}
-
 			if(!filter_var($em, FILTER_VALIDATE_EMAIL)) {
 				array_push($this->errorArray, Constants::$emailInvalid);
 				return;
 			}
-
-			//TODO: Check that username hasn't already been used
+			$checkEmail = mysqli_query($this->connection,"SELECT email from users WHERE email='$em'");
+			if(mysqli_num_rows($checkEmail) != 0){
+				array_push($this->errorArray,Constants::$emailAlreadyExist);
+				return;
+			}
 
 		}
 
